@@ -13,7 +13,8 @@
 		"vscode": {
 			"extensions": [
 				"Angular.ng-template",
-				"lucono.karma-test-explorer"
+				"lucono.karma-test-explorer",
+				"syler.sass-indented"
 			]
 		}
 	}

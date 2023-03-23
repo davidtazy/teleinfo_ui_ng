@@ -1,5 +1,9 @@
-<div class="toolbar" role="banner">
+<div>
 
   <span>{{ title }} app is running!</span>
+
+  <app-card icon="P.App" unit="kW" [value]="papp$ | async"></app-card>
+
+  <app-debug></app-debug>
 
 </div>

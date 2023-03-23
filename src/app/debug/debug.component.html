@@ -1,0 +1,27 @@
+<h1>Donnee brutes</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Nom</th>
+            <th>Valeur</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <tr *ngFor="let sample of influx.stream$ | async">
+            <th>{{sample.date}}</th>
+            <th>{{sample.name}}</th>
+            <th>{{sample.value}}</th>
+        </tr>
+
+        <tr>=========== OFFSET ===============</tr>
+
+        <tr *ngFor="let sample of influx.offset$ | async">
+            <th>{{sample.date}}</th>
+            <th>{{sample.name}}</th>
+            <th>{{sample.value}}</th>
+        </tr>
+
+    </tbody>
+</table>

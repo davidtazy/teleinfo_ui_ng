@@ -8,6 +8,14 @@
 	
 	"features": {
 		"ghcr.io/devcontainers-contrib/features/angular-cli:2": {}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"Angular.ng-template",
+				"lucono.karma-test-explorer"
+			]
+		}
 	}
 
 	// Features to add to the dev container. More info: https://containers.dev/features.

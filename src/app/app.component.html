@@ -1,8 +1,11 @@
 <div>
 
-  <span>{{ title }} app is running!</span>
+  <app-tempo-notifier></app-tempo-notifier>
 
-  <app-card icon="P.App" unit="kW" [value]="papp$ | async"></app-card>
+  <app-card id="0" icon="P.App" unit="kW" [value]="papp$ | async" [color]="papp_color"></app-card>
+  <app-card id="1" icon="" unit="" [value]="getClock()" color="white"></app-card>
+  <app-card id="2" icon="H.Creuses" unit="kWh" [value]="hc$ | async" color="lightgrey"></app-card>
+  <app-card id="3" icon="H.Pleines" unit="kWh" [value]="hp$ | async" color="lightyellow"></app-card>
 
   <app-debug></app-debug>
 

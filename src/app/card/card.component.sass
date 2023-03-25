@@ -1,17 +1,33 @@
-.card
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2)
-    font-size: 25vh
-    text-align: left
-    margin: 5
-    height: 100vh
 
-.value
-    font-size: 1.6em
-    margin: 0
-    font-weight: bold
-    text-align: center
+// little screen    
+@media (min-width: 800px)
+    .card
+        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2)
+        font-size: 15vh
+        margin: 5px
+        padding: 10px
+        height: 21vh
+        display: flex
+        justify-content: space-between
 
-.unit
-    font-size: 0.5em
-    font-weight: normal
-    margin: 0
+    .value
+        margin: 0px
+
+@media (max-width: 800px)
+    .card
+        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2)
+        font-size: 25vh
+        text-align: left
+        margin: 5px
+        height: 100vh
+
+    .value
+        font-size: 1.6em
+        margin: 0px
+        font-weight: bold
+        text-align: center
+
+    .unit
+        font-size: 0.5em
+        font-weight: normal
+        margin: 0px

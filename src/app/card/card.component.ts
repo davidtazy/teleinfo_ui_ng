@@ -13,4 +13,6 @@ export class CardComponent {
   unit = "kWh"
   @Input()
   value: string | null = ""
+  @Input()
+  color: string | null = ""
 }

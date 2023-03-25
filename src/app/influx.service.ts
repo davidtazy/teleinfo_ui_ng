@@ -3,10 +3,12 @@ import { QueryApi, InfluxDB } from "@influxdata/influxdb-client";
 import { bufferTime, from, interval, map, Observable, share, switchMap } from 'rxjs';
 import { Sample } from "./teleinfo"
 import { environment } from '../environments/environment';
+import { InfluxClientService } from './influx-client.service';
 export interface InfluxQueryState {
   values: Sample[];
   isLoading: boolean;
 };
+
 
 @Injectable({
   providedIn: 'root'
@@ -16,60 +18,49 @@ export class InfluxService {
   private bucket = "teleinfo";
   private period_ms = 1000;
 
-  private queryApi: QueryApi
+  private stream_cache: Observable<Sample[]> | null = null
+  private offset_cache: Observable<Sample[]> | null = null
 
-  public stream$: Observable<Sample[]>
-  public offset$: Observable<Sample[]>
+  constructor(private influx_client: InfluxClientService) { }
 
-  constructor() {
+  public get stream$(): Observable<Sample[]> {
 
-    this.queryApi = new InfluxDB({ url: environment.url, token: environment.token }).getQueryApi(environment.org)
+    if (this.stream_cache !== null) {
+      return this.stream_cache
+    }
 
     const fluxQuery = this.getPeriodicQuery()
 
-    this.stream$ = interval(this.period_ms).pipe(
+    this.stream_cache = interval(this.period_ms).pipe(
       switchMap((_) => {
 
-        return from(this.queryApi.rows(fluxQuery))
+        return from(this.influx_client.query_rows(fluxQuery))
           .pipe(
-            map((row) => {
-              const o = row.tableMeta.toObject(row.values)
-              const sample: Sample = {
-                date: o["_time"],
-                name: o["_measurement"],
-                value: o["_value"],
-              };
-              return sample
-            }
-            ),
             bufferTime(this.period_ms / 5),
             map(samples => samples.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0)))
           )
       }),
       share()
     )
+    return this.stream_cache
+  }
 
-    this.offset$ = interval(60000).pipe(
+  public get offset$(): Observable<Sample[]> {
+    if (this.offset_cache !== null) {
+      return this.offset_cache
+    }
+    this.offset_cache = interval(60000).pipe(
       switchMap((_) => {
-
-        return from(this.queryApi.rows(this.getOriginQuery(new Date())))
+        return from(this.influx_client.query_rows(this.getOriginQuery(new Date())))
           .pipe(
-            map((row) => {
-              const o = row.tableMeta.toObject(row.values)
-              const sample: Sample = {
-                date: o["_time"],
-                name: o["_measurement"],
-                value: o["_value"],
-              };
-              return sample
-            }
-            ),
             bufferTime(1000),
             map(samples => samples.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0)))
           )
       }),
       share()
     )
+
+    return this.offset_cache
 
   }
 

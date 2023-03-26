@@ -23,10 +23,12 @@ export class TempoNotifierComponent {
         if (teleinfo.isRedPeriod()) {
           this.tempoColor = "red"
           this.tempoLabel = "Rouge"
+          return
         }
         if (teleinfo.isWhitePeriod()) {
           this.tempoColor = "orange"
           this.tempoLabel = "Blanc"
+          return
         }
         this.show = false
         this.tempoColor = "blue"

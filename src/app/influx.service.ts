@@ -16,7 +16,7 @@ export interface InfluxQueryState {
 export class InfluxService {
 
   private bucket = "teleinfo";
-  private period_ms = 1000;
+  private period_ms = 2000;
 
   private stream_cache: Observable<Sample[]> | null = null
   private offset_cache: Observable<Sample[]> | null = null

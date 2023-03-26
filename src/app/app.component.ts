@@ -1,5 +1,5 @@
 import { ViewportScroller } from '@angular/common';
-import { Component, ElementRef, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { interval, map, Observable } from 'rxjs';
 import { InfluxService } from './influx.service';
 import { Sample, Teleinfo } from './teleinfo';
@@ -11,7 +11,7 @@ import { Sample, Teleinfo } from './teleinfo';
 })
 export class AppComponent implements OnInit {
 
-
+  papp_sample$: Observable<number>
   papp$: Observable<string | null>
   hc$: Observable<string | null>
   hp$: Observable<string | null>
@@ -22,7 +22,7 @@ export class AppComponent implements OnInit {
 
   offset: Sample[] = [];
 
-  constructor(private influx: InfluxService, private scroller: ViewportScroller, private host: ElementRef) {
+  constructor(private influx: InfluxService, private scroller: ViewportScroller) {
 
     influx.offset$.subscribe(
       samples => this.offset = samples
@@ -39,6 +39,17 @@ export class AppComponent implements OnInit {
         }
       )
     )
+
+    this.papp_sample$ = influx.stream$.pipe(
+      map(
+        samples => {
+          const teleinfo = new Teleinfo(samples, [])
+          const papp = teleinfo.getInstantPower()
+          return papp.watts
+        }
+      )
+    )
+
     this.hc$ = influx.stream$.pipe(
       map(
         samples => {

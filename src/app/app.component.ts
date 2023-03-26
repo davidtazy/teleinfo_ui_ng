@@ -18,6 +18,7 @@ export class AppComponent implements OnInit {
   papp_color: string = "purple"
   scroll_position: number = 0
   autoscroll: boolean = true
+  pivot_screen_size = 800
 
   offset: Sample[] = [];
 
@@ -66,12 +67,12 @@ export class AppComponent implements OnInit {
     })
   }
   ngOnInit(): void {
-    this.autoscroll = (window.innerWidth <= 800)
+    this.autoscroll = (window.innerWidth <= this.pivot_screen_size)
   }
 
   @HostListener('window:resize', ['$event'])
   onWindowResize() {
-    this.autoscroll = (window.innerWidth <= 800)
+    this.autoscroll = (window.innerWidth <= this.pivot_screen_size)
   }
 
 

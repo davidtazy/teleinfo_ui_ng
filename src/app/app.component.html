@@ -2,17 +2,16 @@
 
   <app-tempo-notifier></app-tempo-notifier>
 
-  <app-card id="0" icon="P.App" unit="kW" [value]="papp$ | async" [color]="papp_color"></app-card>
-  <app-card id="1" icon="Heure" unit="" [value]="getClock()" color="white"></app-card>
-  <app-card id="2" icon="H.Creuses" unit="kWh" [value]="hc$ | async" color="lightgrey"></app-card>
-  <app-card id="3" icon="H.Pleines" unit="kWh" [value]="hp$ | async" color="lightyellow"></app-card>
+  <app-card id="0" icon="P:" unit="kW" [value]="papp$ | async" [color]="papp_color"></app-card>
+  <app-card id="1" icon="H:" unit="" [value]="getClock()" color="white"></app-card>
+  <app-card id="2" icon="C:" unit="kWh" [value]="hc$ | async" color="lightgrey"></app-card>
+  <app-card id="3" icon="P:" unit="kWh" [value]="hp$ | async" color="lightyellow"></app-card>
 
   <input type="checkbox" name="auto-scroll" id="auto-scroll" [checked]="autoscroll" (change)="autoscroll = !autoscroll">
   <label for="auto-scroll">auto-scroll</label>
   <app-debug></app-debug>
 
-  <app-chart class="background" [datas]="papp_sample$" [max_value]="3000">
+  <app-chart class="fullscreen" [datas]="papp_sample$" [max_value]="3000"></app-chart>
 
-  </app-chart>
-
+  <pre><p>{{ daily$ | async | json }}</p></pre>
 </div>

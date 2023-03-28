@@ -40,7 +40,6 @@ export class ChartComponent implements OnInit, AfterViewInit {
         this.history.pop()
       }
 
-      console.log(this.history)
       this.draw(this.ctx, this.history)
     })
 
@@ -92,6 +91,5 @@ export class ChartComponent implements OnInit, AfterViewInit {
     this.width = window.innerWidth
     this.height = window.innerHeight
 
-    console.log("new size is", this.width, this.height)
   }
 }

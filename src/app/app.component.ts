@@ -22,11 +22,15 @@ export class AppComponent implements OnInit {
 
   offset: Sample[] = [];
 
+  daily$: Observable<Sample[]>
+
   constructor(private influx: InfluxService, private scroller: ViewportScroller) {
 
     influx.offset$.subscribe(
       samples => this.offset = samples
     )
+
+    this.daily$ = influx.daylyreport$
 
     this.papp$ = influx.stream$.pipe(
       map(

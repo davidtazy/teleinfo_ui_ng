@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { QueryApi, InfluxDB } from "@influxdata/influxdb-client";
-import { from, map, Observable } from 'rxjs';
+import { catchError, EMPTY, from, map, Observable, of } from 'rxjs';
 import { environment } from '../environments/environment';
 import { Sample } from './teleinfo';
 
@@ -19,7 +19,12 @@ export class InfluxClientService {
 
     return from(this.queryApi.rows(fluxQuery))
       .pipe(
+        catchError(error => {
+          console.error(error)
+          return EMPTY
+        }),
         map((row) => {
+
           const o = row.tableMeta.toObject(row.values)
           const sample: Sample = {
             date: o["_time"],

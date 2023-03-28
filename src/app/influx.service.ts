@@ -34,7 +34,7 @@ export class InfluxService {
     this.stream_cache = interval(this.period_ms).pipe(
       switchMap((_) => {
 
-        return from(this.influx_client.query_rows(fluxQuery))
+        return this.influx_client.query_rows(fluxQuery)
           .pipe(
             bufferTime(this.period_ms / 3),
             filter(samples => samples.length > 0),
@@ -63,6 +63,39 @@ export class InfluxService {
 
     return this.offset_cache
 
+  }
+
+  public get daylyreport$(): Observable<Sample[]> {
+
+    if (this.stream_cache !== null) {
+      return this.stream_cache
+    }
+
+    const fluxQuery = this.getDailyReportQuery()
+
+    return timer(1000, 60 * 3600).pipe(
+      switchMap((_) => {
+
+        return this.influx_client.query_rows(fluxQuery)
+          .pipe(
+            bufferTime(10000),
+            filter(samples => samples.length > 0),
+            //map(samples => samples.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0)))
+          )
+      }),
+      share()
+    )
+  }
+
+  getDailyReportQuery() {
+    return `import "timezone"
+    import "date"
+    option location = timezone.location(name: "Europe/Paris")
+    from(bucket: "teleinfo")
+          |> range(start: date.sub( d:150m, from:today() ) )
+          |> filter(fn: (r) => r["_measurement"] == "BBRHCJB"  or r["_measurement"] == "BBRHPJB")
+          |> keep(columns: ["_time", "_measurement","_value"])
+          |> aggregateWindow(every: 30m, fn: first)`;
   }
 
 

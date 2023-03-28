@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { QueryApi, InfluxDB } from "@influxdata/influxdb-client";
-import { bufferTime, from, interval, map, Observable, share, switchMap } from 'rxjs';
+import { bufferTime, filter, from, interval, map, Observable, share, switchMap, timer } from 'rxjs';
 import { Sample } from "./teleinfo"
 import { environment } from '../environments/environment';
 import { InfluxClientService } from './influx-client.service';
@@ -36,7 +36,8 @@ export class InfluxService {
 
         return from(this.influx_client.query_rows(fluxQuery))
           .pipe(
-            bufferTime(this.period_ms / 5),
+            bufferTime(this.period_ms / 3),
+            filter(samples => samples.length > 0),
             map(samples => samples.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0)))
           )
       }),
@@ -49,7 +50,7 @@ export class InfluxService {
     if (this.offset_cache !== null) {
       return this.offset_cache
     }
-    this.offset_cache = interval(60000).pipe(
+    this.offset_cache = timer(1000, 60000).pipe(
       switchMap((_) => {
         return from(this.influx_client.query_rows(this.getOriginQuery(new Date())))
           .pipe(

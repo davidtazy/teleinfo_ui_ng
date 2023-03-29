@@ -6,6 +6,7 @@ import { DebugComponent } from './debug/debug.component';
 import { CardComponent } from './card/card.component';
 import { TempoNotifierComponent } from './tempo-notifier/tempo-notifier.component';
 import { ChartComponent } from './chart/chart.component';
+import { NgChartsModule } from 'ng2-charts';
 
 @NgModule({
   declarations: [
@@ -16,7 +17,8 @@ import { ChartComponent } from './chart/chart.component';
     ChartComponent
   ],
   imports: [
-    BrowserModule
+    BrowserModule,
+    NgChartsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

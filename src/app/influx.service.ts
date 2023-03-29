@@ -73,18 +73,13 @@ export class InfluxService {
 
     const fluxQuery = this.getDailyReportQuery()
 
-    return timer(1000, 60 * 3600).pipe(
-      switchMap((_) => {
+    return this.influx_client.query_rows(fluxQuery)
+      .pipe(
+        bufferTime(10000),
+        filter(samples => samples.length > 0),
+        //map(samples => samples.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0)))
+      )
 
-        return this.influx_client.query_rows(fluxQuery)
-          .pipe(
-            bufferTime(10000),
-            filter(samples => samples.length > 0),
-            //map(samples => samples.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0)))
-          )
-      }),
-      share()
-    )
   }
 
   getDailyReportQuery() {
@@ -95,7 +90,7 @@ export class InfluxService {
           |> range(start: date.sub( d:150m, from:today() ) )
           |> filter(fn: (r) => r["_measurement"] == "BBRHCJB"  or r["_measurement"] == "BBRHPJB")
           |> keep(columns: ["_time", "_measurement","_value"])
-          |> aggregateWindow(every: 30m, fn: first)`;
+          |> aggregateWindow(every: 30m, fn: last)`;
   }
 
 

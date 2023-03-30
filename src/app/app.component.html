@@ -10,7 +10,7 @@
   <input type="checkbox" name="auto-scroll" id="auto-scroll" [checked]="autoscroll" (change)="autoscroll = !autoscroll">
   <label for="auto-scroll">auto-scroll</label>
 
-  <app-chart class="fullscreen" [datas]="daily$" [max_value]="3000"></app-chart>
+  <app-chart [datas]="daily$"></app-chart>
   <!--
   <pre><p>{{ daily$ | async | json }}</p></pre>
   <app-debug></app-debug>

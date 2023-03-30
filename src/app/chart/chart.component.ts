@@ -1,4 +1,4 @@
-import { Component, HostListener, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { concatAll, groupBy, map, mergeMap, Observable, of, pairwise, reduce } from 'rxjs';
@@ -16,8 +16,7 @@ interface S {
 })
 export class ChartComponent implements OnInit {
 
-  width: number = 0
-  height: number = 0
+
 
   @ViewChild(BaseChartDirective) chart!: BaseChartDirective;
 
@@ -33,17 +32,23 @@ export class ChartComponent implements OnInit {
   @Input()
   datas: Observable<Sample[]> = of([])
 
-  @Input()
-  max_value: number = 3000
-
-  @Input()
-  max_count: number = 100
-
-
-
   ngOnInit(): void {
-    this.onWindowResize()
 
+    this.onRefresh()
+  }
+
+  compare(a: S, b: S) {
+    if (a.date < b.date) {
+      return -1;
+    }
+    if (a.date > b.date) {
+      return 1;
+    }
+    return 0;
+  }
+
+  onRefresh() {
+    console.log("refresh")
     this.datas.pipe(
 
       // Need to sum all the consumationsm "heure creuse", "heures pleines"...
@@ -101,28 +106,9 @@ export class ChartComponent implements OnInit {
       })
   }
 
-  compare(a: S, b: S) {
-    if (a.date < b.date) {
-      return -1;
-    }
-    if (a.date > b.date) {
-      return 1;
-    }
-    return 0;
-  }
-
   getColor(value: number): string {
     //value from 0 to 1
     var hue = ((1 - value) * 120).toString(10);
     return ["hsl(", hue, ",100%,50%)"].join("");
-  }
-
-
-
-  @HostListener('window:resize', ['$event'])
-  onWindowResize() {
-    this.width = window.innerWidth
-    this.height = window.innerHeight
-
   }
 }

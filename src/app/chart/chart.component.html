@@ -1,2 +1,4 @@
-<canvas #canvas [width]="width" [height]="height" baseChart [data]="barChartData" [options]="barChartOptions"
-    [type]="'bar'"></canvas>
+<div>
+    <button (click)="onRefresh()">refresh</button>
+    <canvas baseChart [data]="barChartData" [options]="barChartOptions" [type]="'bar'"></canvas>
+</div>

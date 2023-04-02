@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { QueryApi, InfluxDB } from "@influxdata/influxdb-client";
-import { bufferTime, filter, from, interval, map, Observable, share, switchMap, timer } from 'rxjs';
+import { bufferTime, filter, from, interval, map, Observable, share, switchMap, tap, timer } from 'rxjs';
 import { Sample } from "./teleinfo"
 import { environment } from '../environments/environment';
 import { InfluxClientService } from './influx-client.service';
@@ -65,19 +65,15 @@ export class InfluxService {
 
   }
 
-  public get daylyreport$(): Observable<Sample[]> {
+  public daylyreport$(offset: number): Observable<Sample[]> {
 
-    if (this.stream_cache !== null) {
-      return this.stream_cache
-    }
-
-    const fluxQuery = this.getDailyReportQuery()
+    const fluxQuery = (offset <= 0) ? this.getDailyReportQuery() : this.getPastReportQuery(offset)
 
     return this.influx_client.query_rows(fluxQuery)
       .pipe(
-        bufferTime(10000),
+        bufferTime(1000),
         filter(samples => samples.length > 0),
-        //map(samples => samples.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0)))
+        //tap((samples) => console.log("influx query received"))
       )
 
   }
@@ -93,6 +89,25 @@ export class InfluxService {
           |> aggregateWindow(every: 30m, fn: last)`;
   }
 
+  getPastReportQuery(delta: number) {
+
+    const begin = `${delta + 1}d`
+    const end = `${delta}d`
+
+    return `import "timezone"
+    import "date"
+    option location = timezone.location(name: "Europe/Paris")
+    
+    delta= date.sub( d:150m, from:today() )
+    begin = date.sub(d:${begin} , from:delta )
+    end= date.sub( d:${end}, from:today() )
+    
+    from(bucket: "teleinfo")
+            |> range(start: begin, stop:end )
+            |> filter(fn: (r) => r["_measurement"] == "BBRHCJB"  or r["_measurement"] == "BBRHPJB")
+            |> keep(columns: ["_time", "_measurement","_value"])
+            |> aggregateWindow(every: 30m, fn: last)`
+  }
 
   getPeriodicQuery() {
     return `import "timezone"

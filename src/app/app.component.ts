@@ -1,8 +1,14 @@
 import { ViewportScroller } from '@angular/common';
 import { Component, HostListener, OnInit } from '@angular/core';
-import { interval, map, Observable } from 'rxjs';
+import { BehaviorSubject, concatAll, groupBy, interval, map, mergeMap, Observable, pairwise, reduce, Subject, switchMap, tap } from 'rxjs';
 import { InfluxService } from './influx.service';
 import { Sample, Teleinfo } from './teleinfo';
+
+interface S {
+  date: Date,
+  value: number
+}
+
 
 @Component({
   selector: 'app-root',
@@ -20,17 +26,79 @@ export class AppComponent implements OnInit {
   autoscroll: boolean = true
   pivot_screen_size = 800
 
+  day_char_offset$: BehaviorSubject<number> = new BehaviorSubject<number>(0)
+  day_char_offset: number
+
   offset: Sample[] = [];
 
-  daily$: Observable<Sample[]>
+  daily: S[] = []
+
+  date_label: string = "???"
+
 
   constructor(private influx: InfluxService, private scroller: ViewportScroller) {
 
-    influx.offset$.subscribe(
-      samples => this.offset = samples
+    this.day_char_offset = 0
+
+    this.day_char_offset$.pipe(
+      switchMap(day_offset => {
+        console.log("received daily report request for day", day_offset)
+        return influx.daylyreport$(day_offset)
+          .pipe(
+            tap(tt => console.log("fsdfsdfsdfsd", tt)),
+
+            // Need to sum all the consumationsm "heure creuse", "heures pleines"...
+            concatAll(),// Obs<Sample[]> ==> Obs<Samples>
+
+            groupBy(sample => sample.date), // group samples by date
+            mergeMap(group$ => group$.pipe(
+              //for each date sum the values
+              reduce((acc: S, cur: Sample) => {
+                acc.date = new Date(cur.date)
+                acc.value += Number.parseInt(cur.value)
+                return acc
+              }, { date: new Date(), value: 0 } as S))
+            ),// ==> Obs<Samples> 
+
+            //Need to  sort by date all samples
+            reduce((acc: S[], cur: S) => [...acc, cur], [] as S[]),// ==> Obs<Samples[]> 
+            map(ss => ss.sort(this.compare)),// sort by time
+            concatAll(), // ==> Obs<Samples> 
+
+            //process the consumption by step
+            pairwise(), // a,b,c ==> (a,b),(b,c)
+            map(([a, b]) => {
+              const ret: S = {
+                date: a.date,
+                value: b.value - a.value
+              }
+              return ret
+            }),
+            reduce((acc: S[], cur: S) => [...acc, cur], [] as S[]),//==> Obs<Samples[]> 
+
+          )
+      })).subscribe(tt => {
+        console.log(tt)
+        this.daily = tt as S[]
+      }
+      )
+
+    this.day_char_offset$.subscribe(
+      offset => {
+        let d = new Date()
+        d.setDate(d.getDate() - offset);
+        const ret = d.toLocaleDateString('fr-FR', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        })
+        console.log("date label ", ret)
+
+        this.date_label = ret
+      }
     )
 
-    this.daily$ = influx.daylyreport$
+
 
     this.papp$ = influx.stream$.pipe(
       map(
@@ -42,6 +110,10 @@ export class AppComponent implements OnInit {
           return papp.renderTokW()
         }
       )
+    )
+
+    influx.offset$.subscribe(
+      samples => this.offset = samples
     )
 
     this.papp_sample$ = influx.stream$.pipe(
@@ -100,6 +172,33 @@ export class AppComponent implements OnInit {
     //value from 0 to 1
     var hue = ((1 - value) * 120).toString(10);
     return ["hsl(", hue, ",100%,50%)"].join("");
+  }
+
+  onNext() {
+    if (this.day_char_offset > 0) {
+      this.day_char_offset--
+      console.log("on next", this.day_char_offset)
+      this.day_char_offset$.next(this.day_char_offset)
+    }
+  }
+  onPrevious() {
+    this.day_char_offset++
+    console.log("on previous", this.day_char_offset)
+    this.day_char_offset$.next(this.day_char_offset)
+  }
+
+
+
+
+
+  compare(a: S, b: S) {
+    if (a.date < b.date) {
+      return -1;
+    }
+    if (a.date > b.date) {
+      return 1;
+    }
+    return 0;
   }
 
 

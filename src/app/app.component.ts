@@ -39,17 +39,11 @@ export class AppComponent implements OnInit {
 
     this.day_char_offset$.pipe(
       switchMap(day_offset => {
-        console.log("received daily report request for day", day_offset)
         return influx.daylyreport$(day_offset)
-          .pipe(
-            tap(tt => console.log("fsdfsdfsdfsd", tt)),
-          )
       })
     ).subscribe(tt => {
-      console.log(tt)
-      this.daily = tt as S[]
-    }
-    )
+      this.daily = tt
+    })
 
     this.day_char_offset$.subscribe(
       offset => {
@@ -58,11 +52,19 @@ export class AppComponent implements OnInit {
         const ret = d.toLocaleDateString('fr-FR', {
           year: 'numeric',
           month: 'long',
-          day: 'numeric'
+          day: 'numeric',
+          weekday: 'long'
         })
         console.log("date label ", ret)
 
-        this.date_label = ret
+
+        if (offset == 0) {
+          this.date_label = `Aujourd'hui, ${ret}`
+        } else if (offset == 1) {
+          this.date_label = `Hier,  ${ret}`
+        } else {
+          this.date_label = `il y a ${offset} jours,  ${ret}`
+        }
       }
     )
 

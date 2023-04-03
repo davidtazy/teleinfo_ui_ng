@@ -17,16 +17,15 @@ export class ChartComponent implements OnChanges {
   barChartData: ChartConfiguration<'bar'>['data'] = {
     labels: [],
     datasets: [
-      { data: [], label: 'Consommation de la journée', backgroundColor: '#9BD0F5' }
+      { data: [], label: 'Consommation sur 30 minutes', backgroundColor: '#9BD0F5' }
     ]
   };
   barChartOptions: ChartConfiguration<'bar'>['options'] = {
     responsive: true,
   };
+
   @Input()
   datas: S[] = []
-
-
 
   ngOnChanges(changes: SimpleChanges): void {
 

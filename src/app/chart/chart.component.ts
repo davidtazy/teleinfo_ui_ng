@@ -21,7 +21,7 @@ export class ChartComponent implements OnChanges {
     ]
   };
   barChartOptions: ChartConfiguration<'bar'>['options'] = {
-    responsive: false,
+    responsive: true,
   };
   @Input()
   datas: S[] = []

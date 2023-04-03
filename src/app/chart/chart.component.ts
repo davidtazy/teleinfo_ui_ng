@@ -1,11 +1,8 @@
 import { Component, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
+import { S } from '../influx.service';
 
-interface S {
-  date: Date,
-  value: number
-}
 
 @Component({
   selector: 'app-chart[datas]',

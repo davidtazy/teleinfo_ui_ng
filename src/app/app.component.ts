@@ -1,13 +1,10 @@
 import { ViewportScroller } from '@angular/common';
 import { Component, HostListener, OnInit } from '@angular/core';
-import { BehaviorSubject, concatAll, groupBy, interval, map, mergeMap, Observable, pairwise, reduce, Subject, switchMap, tap } from 'rxjs';
-import { InfluxService } from './influx.service';
+import { BehaviorSubject, interval, map, Observable, switchMap, tap } from 'rxjs';
+import { InfluxService, S } from './influx.service';
 import { Sample, Teleinfo } from './teleinfo';
 
-interface S {
-  date: Date,
-  value: number
-}
+
 
 
 @Component({
@@ -46,42 +43,13 @@ export class AppComponent implements OnInit {
         return influx.daylyreport$(day_offset)
           .pipe(
             tap(tt => console.log("fsdfsdfsdfsd", tt)),
-
-            // Need to sum all the consumationsm "heure creuse", "heures pleines"...
-            concatAll(),// Obs<Sample[]> ==> Obs<Samples>
-
-            groupBy(sample => sample.date), // group samples by date
-            mergeMap(group$ => group$.pipe(
-              //for each date sum the values
-              reduce((acc: S, cur: Sample) => {
-                acc.date = new Date(cur.date)
-                acc.value += Number.parseInt(cur.value)
-                return acc
-              }, { date: new Date(), value: 0 } as S))
-            ),// ==> Obs<Samples> 
-
-            //Need to  sort by date all samples
-            reduce((acc: S[], cur: S) => [...acc, cur], [] as S[]),// ==> Obs<Samples[]> 
-            map(ss => ss.sort(this.compare)),// sort by time
-            concatAll(), // ==> Obs<Samples> 
-
-            //process the consumption by step
-            pairwise(), // a,b,c ==> (a,b),(b,c)
-            map(([a, b]) => {
-              const ret: S = {
-                date: a.date,
-                value: b.value - a.value
-              }
-              return ret
-            }),
-            reduce((acc: S[], cur: S) => [...acc, cur], [] as S[]),//==> Obs<Samples[]> 
-
           )
-      })).subscribe(tt => {
-        console.log(tt)
-        this.daily = tt as S[]
-      }
-      )
+      })
+    ).subscribe(tt => {
+      console.log(tt)
+      this.daily = tt as S[]
+    }
+    )
 
     this.day_char_offset$.subscribe(
       offset => {
@@ -186,20 +154,5 @@ export class AppComponent implements OnInit {
     console.log("on previous", this.day_char_offset)
     this.day_char_offset$.next(this.day_char_offset)
   }
-
-
-
-
-
-  compare(a: S, b: S) {
-    if (a.date < b.date) {
-      return -1;
-    }
-    if (a.date > b.date) {
-      return 1;
-    }
-    return 0;
-  }
-
 
 }

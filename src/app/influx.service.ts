@@ -129,15 +129,15 @@ import "date"
 option location = timezone.location(name: "Europe/Paris")
 from(bucket: "teleinfo")
   |> range(start: date.sub( d:150m, from:today() ) )
-  |> filter(fn: (r) => r["_measurement"] == "BBRHCJB"  or r["_measurement"] == "BBRHPJB")
+  |> filter(fn: (r) => r._measurement =~  /BBR[A-Z]*/ )
   |> keep(columns: ["_time", "_measurement","_value"])
   |> aggregateWindow(every: 30m, fn: last)`;
   }
 
   getPastReportQuery(delta: number) {
 
-    const begin = `${delta + 1}d`
-    const end = `${delta}d`
+    const begin = `${delta}d`
+    const end = `${delta - 1}d`
 
     return `import "timezone"
 import "date"

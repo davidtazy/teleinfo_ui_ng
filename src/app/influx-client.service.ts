@@ -24,14 +24,12 @@ export class InfluxClientService {
           return EMPTY
         }),
         map((row) => {
-
           const o = row.tableMeta.toObject(row.values)
-          const sample: Sample = {
+          return {
             date: o["_time"],
             name: o["_measurement"],
             value: o["_value"],
           };
-          return sample
         }
         )
       )

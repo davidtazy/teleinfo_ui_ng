@@ -17,7 +17,7 @@ export class ChartComponent implements OnChanges {
   barChartData: ChartConfiguration<'bar'>['data'] = {
     labels: [],
     datasets: [
-      { data: [], label: 'Consommation sur 30 minutes', backgroundColor: '#9BD0F5' }
+      { data: [], label: 'Consommation sur 30 minutes', backgroundColor: [] }
     ]
   };
   barChartOptions: ChartConfiguration<'bar'>['options'] = {
@@ -40,15 +40,20 @@ export class ChartComponent implements OnChanges {
     //console.log(JSON.stringify(samples))
 
     this.barChartData.datasets[0].data = []
+    this.barChartData.datasets[0].backgroundColor = []
     this.barChartData.labels = []
 
     //fill dataset
+    const colors: string[] = []
     for (const sample of samples) {
       this.barChartData.datasets[0].data.push(sample.value)
+
+      colors.push(sample.color)
 
       const label = `${("0" + sample.date.getHours()).slice(-2)}:${("0" + sample.date.getMinutes()).slice(-2)}`;
       this.barChartData.labels.push(label)
     }
+    this.barChartData.datasets[0].backgroundColor = colors
 
     //ensure abscisse always the same size
     const missing_labels = 52 - this.barChartData.labels.length

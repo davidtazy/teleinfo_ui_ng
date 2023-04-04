@@ -13,6 +13,7 @@ export interface InfluxQueryState {
 export interface S {
   date: Date,
   value: number
+  color: string
 }
 
 
@@ -88,39 +89,65 @@ export class InfluxService {
         mergeMap(group$ => group$.pipe(
           //for each date sum the values
           reduce((acc: S, cur: Sample) => {
-            acc.date = new Date(cur.date)
-            acc.value += Number.parseInt(cur.value)
+
+            if (cur.name == "PTEC") {
+              acc.color = cur.value
+            } else {
+              acc.date = new Date(cur.date)
+              acc.value += Number.parseInt(cur.value)
+            }
+
             return acc
           }, { date: new Date(), value: 0 } as S))
         ),// ==> Obs<Samples> 
+
+        tap(sample => this.price_to_color(sample)),
 
         // split the pipe to avoid compilation error https://github.com/ReactiveX/rxjs/issues/5599  
       ).pipe(
 
         //Need to  sort by date all samples
         reduce((acc: S[], cur: S) => [...acc, cur], [] as S[]),// ==> Obs<Samples[]> 
-
         map(ss => ss.sort(this.compare)),// sort by time
 
+        //process the consumption by period of subsequent samples
         concatAll<S[]>(), // ==> Obs<Samples> 
-
-        //process the consumption by step
         pairwise<S>(), // a,b,c ==> (a,b),(b,c)
-
-        map(([a, b]) => {
-          const ret: S = {
-            date: a.date,
-            value: b.value - a.value
-          }
-          return ret
-        }),
-
+        map(([a, b]) => ({ date: a.date, value: b.value - a.value, color: b.color })),
+        //regroup in one array
         reduce<S, S[]>((acc: S[], cur: S) => [...acc, cur], [] as S[])//==> Obs<Samples[]> 
 
       )
 
     return tt
 
+  }
+  price_to_color(sample: S): void {
+
+    if (sample.color === undefined) {
+      sample.color = "black"
+      return
+    }
+
+    let color = ""
+    if (sample.color.startsWith("HC")) {
+      color = "light"
+    }
+
+    if (sample.color.endsWith("JB")) {
+      color += "blue"
+    }
+    else if (sample.color.endsWith("JW")) {
+      color += "pink"
+    }
+    else if (sample.color.endsWith("JR")) {
+      color += "red"
+    }
+    else {
+      color += "black"
+    }
+
+    sample.color = color
   }
 
   getDailyReportQuery() {
@@ -129,7 +156,7 @@ import "date"
 option location = timezone.location(name: "Europe/Paris")
 from(bucket: "teleinfo")
   |> range(start: date.sub( d:150m, from:today() ) )
-  |> filter(fn: (r) => r._measurement =~  /BBR[A-Z]*/ )
+  |> filter(fn: (r) => r._measurement =~  /BBR[A-Z]*/ or r._measurement == "PTEC" )
   |> keep(columns: ["_time", "_measurement","_value"])
   |> aggregateWindow(every: 30m, fn: last)`;
   }
@@ -149,7 +176,7 @@ end= date.sub( d:${end}, from:today() )
  
 from(bucket: "teleinfo")
     |> range(start: begin, stop:end )
-    |> filter(fn: (r) => r["_measurement"] == "BBRHCJB"  or r["_measurement"] == "BBRHPJB")
+    |> filter(fn: (r) => r._measurement =~  /BBR[A-Z]*/ or r._measurement == "PTEC")
     |> keep(columns: ["_time", "_measurement","_value"])
     |> aggregateWindow(every: 30m, fn: last)`
   }

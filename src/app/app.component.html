@@ -13,9 +13,9 @@
 
   <div class="buttons">
     <button style="height: 80px;padding: 10px;" (click)="onPrevious()">precedent</button>
-    <span>{{date_label}}</span>
     <button style="height: 80px;padding: 10px;" (click)="onNext()">suivant</button>
   </div>
+  <h1 id="4" style="text-align: center;">{{date_label}}</h1>
   <app-chart [datas]="daily"></app-chart>
   <!--
   <pre><p>{{ daily  | json }}</p></pre>

@@ -115,16 +115,40 @@ export class AppComponent implements OnInit {
       )
     )
 
-    const sub = interval(5000).subscribe(_ => {
-      if (this.autoscroll) {
-        this.scroll_position++;
-        this.scroll_position %= 4
-        this.scroller.scrollToAnchor(this.scroll_position.toString())
-      }
-    })
+
   }
   ngOnInit(): void {
-    this.autoscroll = (window.innerWidth <= this.pivot_screen_size)
+    const wide_screen = (window.innerWidth >= this.pivot_screen_size)
+
+    if (wide_screen) {
+      interval(10000).subscribe(_ => {
+        if (this.autoscroll) {
+          if (this.scroll_position == 0) {
+            this.scroll_position = 4
+          } else {
+            this.scroll_position = 0
+          }
+          this.scroller.scrollToAnchor(this.scroll_position.toString())
+        }
+      })
+
+      interval(60000).subscribe(_ => {
+        if (this.autoscroll) {
+          //refresh chart periodically in auto scroll on the current day
+          this.day_char_offset$.next(0)
+        }
+      })
+
+
+    } else {
+      interval(5000).subscribe(_ => {
+        if (this.autoscroll) {
+          this.scroll_position++;
+          this.scroll_position %= 5
+          this.scroller.scrollToAnchor(this.scroll_position.toString())
+        }
+      })
+    }
   }
 
   @HostListener('window:resize', ['$event'])

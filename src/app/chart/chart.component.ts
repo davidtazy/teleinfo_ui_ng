@@ -17,11 +17,13 @@ export class ChartComponent implements OnChanges {
   barChartData: ChartConfiguration<'bar'>['data'] = {
     labels: [],
     datasets: [
-      { data: [], label: 'Consommation sur 30 minutes', backgroundColor: [] }
-    ]
+      { data: [], backgroundColor: [] }
+    ],
+
   };
   barChartOptions: ChartConfiguration<'bar'>['options'] = {
     responsive: true,
+    plugins: { legend: { display: false } }
   };
 
   @Input()

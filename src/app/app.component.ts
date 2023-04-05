@@ -121,9 +121,9 @@ export class AppComponent implements OnInit {
     const wide_screen = (window.innerWidth >= this.pivot_screen_size)
 
     if (wide_screen) {
-      interval(10000).subscribe(_ => {
+      interval(4000).subscribe(counter => {
         if (this.autoscroll) {
-          if (this.scroll_position == 0) {
+          if (this.scroll_position == 0 && counter % 5 == 0) {
             this.scroll_position = 4
           } else {
             this.scroll_position = 0

@@ -138,7 +138,7 @@ export class InfluxService {
       color += "blue"
     }
     else if (sample.color.endsWith("JW")) {
-      color += "pink"
+      color += "grey"
     }
     else if (sample.color.endsWith("JR")) {
       color += "red"

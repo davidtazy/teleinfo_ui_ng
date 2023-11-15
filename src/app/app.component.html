@@ -1,11 +1,18 @@
 <div>
 
   <app-tempo-notifier></app-tempo-notifier>
+  
+<div class="dashboard">
+  <app-card id="0" icon="assets/grid.png" unit="kW" [value]="papp$ | async" [color]="papp_color"></app-card>
+  <app-card id="4" icon="assets/solar-panel.png" unit="kWh" value="---" color="darkGrey"></app-card>
 
-  <app-card id="0" icon="P:" unit="kW" [value]="papp$ | async" [color]="papp_color"></app-card>
-  <app-card id="1" icon="H:" unit="" [value]="getClock()" color="white"></app-card>
-  <app-card id="2" icon="C:" unit="kWh" [value]="hc$ | async" color="lightgrey"></app-card>
-  <app-card id="3" icon="P:" unit="kWh" [value]="hp$ | async" color="lightyellow"></app-card>
+  <app-card id="2" icon="assets/cheap.png" unit="kWh" [value]="hc$ | async" color="darkGrey"></app-card>
+  <app-card id="3" icon="assets/expensive.png" unit="kWh" [value]="hp$ | async" color="darkGrey"></app-card>
+ 
+  <app-card id="1" icon="assets/clock.png" unit="" [value]="getClock()" color="darkGrey"></app-card>
+  <app-card id="5" icon="assets/production.png" unit="kWh" value="---" color="darkGrey"></app-card>
+
+</div>
 
   <input type="checkbox" name="auto-scroll" id="auto-scroll" [checked]="autoscroll" (change)="autoscroll = !autoscroll">
   <label for="auto-scroll">auto-scroll</label>
@@ -15,8 +22,9 @@
     <button style="height: 80px;padding: 10px;" (click)="onPrevious()">precedent</button>
     <button style="height: 80px;padding: 10px;" (click)="onNext()">suivant</button>
   </div>
-  <h1 id="4" style="text-align: center;">{{date_label}}</h1>
+  <h1 id="6" style="text-align: center;">{{date_label}}</h1>
   <app-chart [datas]="daily"></app-chart>
+
   <!--
   <pre><p>{{ daily  | json }}</p></pre>
   <app-debug></app-debug>

@@ -1,5 +1,8 @@
 <div class="card" style='background-color: {{color}}'>
-    {{icon}}
+    <div class="logo-container">
+       <img [src]="icon" alt="Logo" class="logo">
+    </div>
     <p class="value" id="val"><b>{{value}}</b> </p>
-    <span class="unit">{{unit}}</span>
+
+    <span *ngIf="unit.length > 0" class="unit">{{unit}}</span>
 </div>

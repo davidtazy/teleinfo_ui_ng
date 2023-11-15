@@ -23,7 +23,13 @@ export class ChartComponent implements OnChanges {
   };
   barChartOptions: ChartConfiguration<'bar'>['options'] = {
     responsive: true,
-    plugins: { legend: { display: false } }
+    plugins: { legend: { display: false } },
+    scales:{
+      y:{
+        max:1100,
+        suggestedMin:0
+      }
+    }
   };
 
   @Input()

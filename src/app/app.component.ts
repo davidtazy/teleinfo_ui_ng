@@ -124,7 +124,7 @@ export class AppComponent implements OnInit {
       interval(4000).subscribe(counter => {
         if (this.autoscroll) {
           if (this.scroll_position == 0 && counter % 5 == 0) {
-            this.scroll_position = 4
+            this.scroll_position = 6
           } else {
             this.scroll_position = 0
           }

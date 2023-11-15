@@ -46,6 +46,12 @@ class Teleinfo {
     }
 
     getInstantPower(): Power {
+
+        const instant = this.find("power_import_watt");
+        if (instant){
+            return Power.Watt(getIntValue("power_import_watt", this.samples));
+        }
+
         return Power.Watt(getIntValue("PAPP", this.samples));
     }
 

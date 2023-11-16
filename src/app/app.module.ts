@@ -7,6 +7,7 @@ import { CardComponent } from './card/card.component';
 import { TempoNotifierComponent } from './tempo-notifier/tempo-notifier.component';
 import { ChartComponent } from './chart/chart.component';
 import { NgChartsModule } from 'ng2-charts';
+import { DashboardComponent } from './dashboard/dashboard.component';
 
 @NgModule({
   declarations: [
@@ -14,7 +15,8 @@ import { NgChartsModule } from 'ng2-charts';
     DebugComponent,
     CardComponent,
     TempoNotifierComponent,
-    ChartComponent
+    ChartComponent,
+    DashboardComponent
   ],
   imports: [
     BrowserModule,

@@ -1,18 +1,8 @@
 <div>
 
   <app-tempo-notifier></app-tempo-notifier>
+  <app-dashboard></app-dashboard>
   
-<div class="dashboard">
-  <app-card id="0" icon="assets/grid.png" unit="kW" [value]="papp$ | async" [color]="papp_color"></app-card>
-  <app-card id="1" icon="assets/solar-panel.png" unit="kWh" [value]="instant_solar$ | async" color="darkGrey"></app-card>
-  
-  <app-card id="2" icon="assets/cheap.png" unit="kWh" [value]="hc$ | async" color="darkGrey"></app-card>
-  <app-card id="3" icon="assets/expensive.png" unit="kWh" [value]="hp$ | async" color="darkGrey"></app-card>
- 
-  <app-card id="4" icon="assets/clock.png" unit="" [value]="getClock()" color="darkGrey"></app-card>
-  <app-card id="5" icon="assets/production.png" unit="kWh" [value]="daily_solar$ | async" color="darkGrey"></app-card>
-
-</div>
 
   <input type="checkbox" name="auto-scroll" id="auto-scroll" [checked]="autoscroll" (change)="autoscroll = !autoscroll">
   <label for="auto-scroll">auto-scroll</label>

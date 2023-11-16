@@ -18,6 +18,8 @@ export class AppComponent implements OnInit {
   papp$: Observable<string | null>
   hc$: Observable<string | null>
   hp$: Observable<string | null>
+  instant_solar$: Observable<string | null>
+  daily_solar$: Observable<string | null>
   papp_color: string = "purple"
   scroll_position: number = 0
   autoscroll: boolean = true
@@ -78,6 +80,28 @@ export class AppComponent implements OnInit {
           const percent = Math.min(1, papp.watts / 3000);
           this.papp_color = this.getColor(percent);
           return papp.renderTokW()
+        }
+      )
+    )
+
+    this.instant_solar$ = influx.stream$.pipe(
+      map(
+        samples => {
+          const teleinfo = new Teleinfo(samples, [])
+          const papp = teleinfo.getInstantSolarPower()
+          
+          return papp.renderTokW()
+        }
+      )
+    )
+
+    this.daily_solar$ = influx.stream$.pipe(
+      map(
+        samples => {
+          const teleinfo = new Teleinfo(samples, [])
+          const papp = teleinfo.getDailySolarProduction()
+          
+          return papp.renderTokWh()
         }
       )
     )

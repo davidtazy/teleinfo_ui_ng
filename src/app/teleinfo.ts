@@ -55,6 +55,14 @@ class Teleinfo {
         return Power.Watt(getIntValue("PAPP", this.samples));
     }
 
+    getInstantSolarPower(): Power {
+        return Power.Watt(getIntValue("instant_solar_production_watt", this.samples));
+    }
+
+    getDailySolarProduction(): Energy {
+        return Energy.WattHour(getIntValue("total_solar_production_wh", this.samples));
+    }
+
     getDailyConsumption() {
         return this.getAccuConsumption("BBRHP");
     }

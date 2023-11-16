@@ -1,6 +1,6 @@
 import { ViewportScroller } from '@angular/common';
 import { Component, HostListener, OnInit } from '@angular/core';
-import { BehaviorSubject, interval, map, Observable, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, delay, interval, map, Observable, switchMap, tap, timer } from 'rxjs';
 import { InfluxService, S } from './influx.service';
 import { Sample, Teleinfo } from './teleinfo';
 
@@ -14,13 +14,6 @@ import { Sample, Teleinfo } from './teleinfo';
 })
 export class AppComponent implements OnInit {
 
-  papp_sample$: Observable<number>
-  papp$: Observable<string | null>
-  hc$: Observable<string | null>
-  hp$: Observable<string | null>
-  instant_solar$: Observable<string | null>
-  daily_solar$: Observable<string | null>
-  papp_color: string = "purple"
   scroll_position: number = 0
   autoscroll: boolean = true
   pivot_screen_size = 800
@@ -35,7 +28,19 @@ export class AppComponent implements OnInit {
   date_label: string = "???"
 
 
+  toggleDarkTheme(dark:boolean): void {
+    document.body.classList.toggle('dark-theme',dark);
+  }
+
+
   constructor(private influx: InfluxService, private scroller: ViewportScroller) {
+
+    
+    timer(0,60*60*1000).subscribe(tick =>{
+      const date = new Date()
+      const dark = date.getHours() > 20 || date.getHours() < 7
+      this.toggleDarkTheme(dark)
+    })
 
     this.day_char_offset = 0
 
@@ -72,72 +77,14 @@ export class AppComponent implements OnInit {
 
 
 
-    this.papp$ = influx.stream$.pipe(
-      map(
-        samples => {
-          const teleinfo = new Teleinfo(samples, [])
-          const papp = teleinfo.getInstantPower()
-          const percent = Math.min(1, papp.watts / 3000);
-          this.papp_color = this.getColor(percent);
-          return papp.renderTokW()
-        }
-      )
-    )
 
-    this.instant_solar$ = influx.stream$.pipe(
-      map(
-        samples => {
-          const teleinfo = new Teleinfo(samples, [])
-          const papp = teleinfo.getInstantSolarPower()
-          
-          return papp.renderTokW()
-        }
-      )
-    )
 
-    this.daily_solar$ = influx.stream$.pipe(
-      map(
-        samples => {
-          const teleinfo = new Teleinfo(samples, [])
-          const papp = teleinfo.getDailySolarProduction()
-          
-          return papp.renderTokWh()
-        }
-      )
-    )
 
-    influx.offset$.subscribe(
-      samples => this.offset = samples
-    )
+    
 
-    this.papp_sample$ = influx.stream$.pipe(
-      map(
-        samples => {
-          const teleinfo = new Teleinfo(samples, [])
-          const papp = teleinfo.getInstantPower()
-          return papp.watts
-        }
-      )
-    )
+  
 
-    this.hc$ = influx.stream$.pipe(
-      map(
-        samples => {
-          const teleinfo = new Teleinfo(samples, this.offset)
-
-          return teleinfo.getNightlyConsumption().renderTokWh()
-        }
-      )
-    )
-
-    this.hp$ = influx.stream$.pipe(
-      map(
-        samples => {
-          const teleinfo = new Teleinfo(samples, this.offset)
-          return teleinfo.getDailyConsumption().renderTokWh()
-        }
-      )
-    )
+   
 
 
   }
@@ -181,16 +128,6 @@ export class AppComponent implements OnInit {
   }
 
 
-  getClock() {
-    const date = new Date();
-    return `${date.getHours()}:${("0" + date.getMinutes()).slice(-2)}`;
-  }
-
-  getColor(value: number): string {
-    //value from 0 to 1
-    var hue = ((1 - value) * 120).toString(10);
-    return ["hsl(", hue, ",100%,50%)"].join("");
-  }
 
   onNext() {
     if (this.day_char_offset > 0) {

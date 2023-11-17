@@ -1,15 +1,15 @@
-import { Component, Input } from '@angular/core';
-import { Sample, Teleinfo } from '../teleinfo';
+import { Component } from '@angular/core';
+import {  Teleinfo } from '../teleinfo';
 import { InfluxService } from '../influx.service';
 import { Observable, combineLatest, interval, map,of,share } from 'rxjs';
-
+import Rainbow, { rainbow } from '@indot/rainbowvis';
 
 type CardData ={
   id:string
   icon:string
   value$:Observable<string>
   unit: string
-  color$: Observable<string>
+  color$: Observable<string> 
 }
 
 @Component({
@@ -20,7 +20,7 @@ type CardData ={
 export class DashboardComponent {
 
   
-  
+  solar_colors:Rainbow = rainbow().overColors('white','lightpink','deeppink', 'darkviolet').withRange(0, 100);
   
 
   teleinfo$: Observable<Teleinfo>
@@ -31,6 +31,7 @@ export class DashboardComponent {
   clock$: Observable<string>
   solar_total$: Observable<string>
   papp_color$: Observable<string>
+  solar_color$: Observable<string>
 
   cards : CardData[]
   
@@ -55,6 +56,18 @@ export class DashboardComponent {
       map(papp_watts =>{
         const percent = Math.min(1, papp_watts / 3000);
         return  this.getColor(percent);
+      })
+    )
+
+    this.solar_color$ = this.teleinfo$.pipe(
+      map(
+        (teleinfo:Teleinfo) => teleinfo.getInstantSolarPower().watts
+      ),
+      map(watts =>{
+        const percent = 100*watts/2800
+        const color = this.solar_colors.colorAt(percent)
+        
+        return  "#" + color
       })
     )
 
@@ -87,17 +100,17 @@ export class DashboardComponent {
     )
 
 
-
+  
     this.cards = [
       {id:"0",icon:"assets/grid.png",unit:"kW", value$:this.papp$, color$:this.papp_color$},
-      {id:"1",icon:"assets/solar-panel.png",unit:"kW", value$:this.solar$, color$:of("darkGrey")},
+      {id:"1",icon:"assets/solar-panel.png",unit:"kW", value$:this.solar$,color$:this.solar_color$},
 
-      {id:"2",icon:"assets/cheap.png",unit:"kWh", value$:this.hc$, color$:of("darkGrey")},
-      {id:"3",icon:"assets/expensive.png",unit:"kWh", value$:this.hp$, color$:of("darkGrey")},
+      {id:"2",icon:"assets/cheap.png",unit:"kWh", value$:this.hc$, color$:of("white")},
+      {id:"3",icon:"assets/expensive.png",unit:"kWh", value$:this.hp$, color$:of("white")},
 
-      {id:"4",icon:"assets/clock.png",unit:"", value$:this.clock$, color$:of("darkGrey")},
-      {id:"5",icon:"assets/production.png",unit:"kWh", value$:this.solar_total$, color$:of("darkGrey")},
-    ]
+      {id:"4",icon:"assets/clock.png",unit:"", value$:this.clock$, color$:of("white")},
+      {id:"5",icon:"assets/production.png",unit:"kWh", value$:this.solar_total$, color$:of("white")},
+     ]
    
       
   }

@@ -2,7 +2,8 @@ import { ViewportScroller } from '@angular/common';
 import { Component, HostListener, OnInit } from '@angular/core';
 import { BehaviorSubject, delay, interval, map, Observable, switchMap, tap, timer } from 'rxjs';
 import { InfluxService, S } from './influx.service';
-import { Sample, Teleinfo } from './teleinfo';
+import { Sample } from './teleinfo';
+
 
 
 
@@ -38,7 +39,8 @@ export class AppComponent implements OnInit {
     
     timer(0,60*60*1000).subscribe(tick =>{
       const date = new Date()
-      const dark = date.getHours() > 20 || date.getHours() < 7
+      console.log(date,date.getHours(),date.getHours() > 20 || date.getHours() < 7)
+      const dark = date.getHours() >= 19 || date.getHours() < 7
       this.toggleDarkTheme(dark)
     })
 

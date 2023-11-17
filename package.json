@@ -11,6 +11,7 @@
   "private": true,
   "dependencies": {
     "@angular/animations": "^15.2.0",
+    "@angular/cdk": "^15.2.0",
     "@angular/common": "^15.2.0",
     "@angular/compiler": "^15.2.0",
     "@angular/core": "^15.2.0",
@@ -18,7 +19,7 @@
     "@angular/platform-browser": "^15.2.0",
     "@angular/platform-browser-dynamic": "^15.2.0",
     "@angular/router": "^15.2.0",
-    "@angular/cdk": "^15.2.0",
+    "@indot/rainbowvis": "^1.0.2",
     "@influxdata/influxdb-client": "^1.33.2",
     "chart.js": "^3.6.0",
     "ng2-charts": "^4.1.1",

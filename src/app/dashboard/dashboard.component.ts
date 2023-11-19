@@ -96,7 +96,6 @@ export class DashboardComponent {
   show_state() {
     const date = new Date()
     const secs = date.getSeconds() % 10
-    console.log(secs)
     return secs < 7
   }
 

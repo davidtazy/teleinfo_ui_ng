@@ -39,7 +39,6 @@ export class AppComponent implements OnInit {
     
     timer(0,60*60*1000).subscribe(tick =>{
       const date = new Date()
-      console.log(date,date.getHours(),date.getHours() > 20 || date.getHours() < 7)
       const dark = date.getHours() >= 19 || date.getHours() < 7
       this.toggleDarkTheme(dark)
     })
@@ -64,7 +63,6 @@ export class AppComponent implements OnInit {
           day: 'numeric',
           weekday: 'long'
         })
-        console.log("date label ", ret)
 
 
         if (offset == 0) {

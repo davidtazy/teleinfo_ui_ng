@@ -46,7 +46,6 @@ export class ChartComponent implements OnChanges {
       return
     }
 
-    console.log("ng on change")
 
     const samples = this.datas
 
@@ -59,7 +58,6 @@ export class ChartComponent implements OnChanges {
     //fill dataset
     const colors: string[] = []
     const solar_colors: string[] = []
-    console.log(samples)
     for (const sample of samples) {
       const solar_power = Math.max(0,sample.solar_power)
       this.barChartData.datasets[0].data.push(solar_power)

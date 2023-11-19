@@ -96,7 +96,6 @@ export class InfluxService {
             }else if(cur.name == "total_solar_production_wh"){
               
               acc.solar_power += (cur.value as unknown as number)
-              console.log("current solar",acc.solar_power)
             } else {
               acc.date = new Date(cur.date)
               acc.import_power += Number.parseInt(cur.value)

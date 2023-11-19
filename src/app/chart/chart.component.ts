@@ -46,12 +46,12 @@ export class ChartComponent implements OnChanges {
       return
     }
 
-
     const samples = this.datas
 
     //console.log(JSON.stringify(samples))
 
     this.barChartData.datasets[0].data = []
+    this.barChartData.datasets[1].data = []
     this.barChartData.datasets[0].backgroundColor = []
     this.barChartData.labels = []
 

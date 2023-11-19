@@ -10,7 +10,7 @@ export class CardComponent {
   @Input()
   icon = "icon"
   @Input()
-  unit = "kWh"
+  unit : string | null = ""
   @Input()
   value: string | null = ""
   @Input()

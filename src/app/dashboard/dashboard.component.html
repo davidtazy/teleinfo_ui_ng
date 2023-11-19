@@ -1,5 +1,5 @@
 <div class="dashboard">
 
-    <app-card *ngFor="let card of cards" [id]="card.id" [icon]="card.icon" [value]="card.value$ | async" [color]="card.color$ | async" [unit]="card.unit"   />
+    <app-card *ngFor="let card of cards" [id]="card.id" [icon]="card.icon" [value]="card.value$ | async" [color]="card.color$ | async" [unit]="card.unit$ | async"   />
    
 </div>

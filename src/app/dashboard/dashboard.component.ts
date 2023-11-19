@@ -1,15 +1,15 @@
 import { Component } from '@angular/core';
-import {  Teleinfo } from '../teleinfo';
+import { Energy, Teleinfo } from '../teleinfo';
 import { InfluxService } from '../influx.service';
-import { Observable, combineLatest, interval, map,of,share } from 'rxjs';
+import { BehaviorSubject, Observable, combineLatest, interval, map, of, share } from 'rxjs';
 import Rainbow, { rainbow } from '@indot/rainbowvis';
 
-type CardData ={
-  id:string
-  icon:string
-  value$:Observable<string>
-  unit: string
-  color$: Observable<string> 
+type CardData = {
+  id: string
+  icon: string
+  value$: Observable<string>
+  unit$: Observable<string>
+  color$: Observable<string>
 }
 
 @Component({
@@ -19,106 +19,85 @@ type CardData ={
 })
 export class DashboardComponent {
 
-  
-  solar_colors:Rainbow = rainbow().overColors('white','lightpink','deeppink', 'darkviolet').withRange(0, 100);
-  
+
+  solar_colors: Rainbow = rainbow().overColors('white', 'lightpink', 'deeppink', 'darkviolet').withRange(0, 100);
+
 
   teleinfo$: Observable<Teleinfo>
-  papp$ : Observable<string>
-  solar$: Observable<string>
-  hc$: Observable<string>
-  hp$: Observable<string>
-  clock$: Observable<string>
-  solar_total$: Observable<string>
-  papp_color$: Observable<string>
-  solar_color$: Observable<string>
+  papp$ = new BehaviorSubject("")
+  solar$ = new BehaviorSubject("")
+  hc$ = new BehaviorSubject("")
+  hp$ = new BehaviorSubject("")
+  clock$ = new BehaviorSubject("")
+  solar_total$ = new BehaviorSubject("")
+  papp_color$ = new BehaviorSubject("")
+  solar_color$ = new BehaviorSubject("")
+  total_solar_unit$ = new BehaviorSubject("")
 
-  cards : CardData[]
-  
+  cards: CardData[]
 
-  constructor(private influx: InfluxService){
-    
-    this.teleinfo$  = combineLatest([influx.stream$,influx.offset$]).pipe(
-        map( ([stream,offset])=>new Teleinfo(stream,offset)),
-        share()
+
+  constructor(private influx: InfluxService) {
+
+    this.teleinfo$ = combineLatest([influx.stream$, influx.offset$]).pipe(
+      map(([stream, offset]) => new Teleinfo(stream, offset)),
+      share()
     )
 
-    this.papp$ = this.teleinfo$.pipe(
-      map(
-        (teleinfo:Teleinfo) => teleinfo.getInstantPower().renderTokW()
-      )
-    )
-    
-    this.papp_color$ = this.teleinfo$.pipe(
-      map(
-        (teleinfo:Teleinfo) => teleinfo.getInstantPower().watts
-      ),
-      map(papp_watts =>{
-        const percent = Math.min(1, papp_watts / 3000);
-        return  this.getColor(percent);
-      })
+    this.teleinfo$.subscribe((teleinfo: Teleinfo) => {
+      const instant_power = teleinfo.getInstantPower()
+      this.papp$.next(instant_power.renderTokW())
+
+      let percent = Math.min(1, instant_power.watts / 3000);
+      this.papp_color$.next(this.getColor(percent))
+
+      const solar_power = teleinfo.getInstantSolarPower()
+      this.solar$.next(solar_power.renderTokW())
+      percent = 100 * solar_power.watts / 2800
+      const color = this.solar_colors.colorAt(percent)
+      this.solar_color$.next("#" + color)
+
+      this.hc$.next(teleinfo.getNightlyConsumption().renderTokWh())
+      this.hp$.next(teleinfo.getDailyConsumption().renderTokWh())
+
+      if (this.show_state()) {
+        this.total_solar_unit$.next("")
+        this.solar_total$.next(teleinfo.getSoftSolarState())
+      } else {
+        this.total_solar_unit$.next("kWh")
+        this.solar_total$.next(teleinfo.getDailySolarProduction().renderTokWh())
+      }
+
+      const date = new Date()
+      this.clock$.next(`${date.getHours()}:${("0" + date.getMinutes()).slice(-2)}`)
+
+    }
     )
 
-    this.solar_color$ = this.teleinfo$.pipe(
-      map(
-        (teleinfo:Teleinfo) => teleinfo.getInstantSolarPower().watts
-      ),
-      map(watts =>{
-        const percent = 100*watts/2800
-        const color = this.solar_colors.colorAt(percent)
-        
-        return  "#" + color
-      })
-    )
-
-    this.solar$ = this.teleinfo$.pipe(
-      map(
-        (teleinfo:Teleinfo) => teleinfo.getInstantSolarPower().renderTokW()
-      )
-    )
-
-    this.hc$ = this.teleinfo$.pipe(
-      map(
-        (teleinfo:Teleinfo) => teleinfo.getNightlyConsumption().renderTokWh()
-      )
-    )
-
-    this.hp$ = this.teleinfo$.pipe(
-      map(
-        (teleinfo:Teleinfo) => teleinfo.getDailyConsumption().renderTokWh()
-      )
-    )
-
-    this.solar_total$ = this.teleinfo$.pipe(
-      map(
-        (teleinfo:Teleinfo) => teleinfo.getDailySolarProduction().renderTokWh()
-      )
-    )
-    this.clock$ = interval(1000).pipe(
-        map(tick => new Date()),
-        map((date:Date) => `${date.getHours()}:${("0" + date.getMinutes()).slice(-2)}`)
-    )
-
-
-  
     this.cards = [
-      {id:"0",icon:"assets/grid.png",unit:"kW", value$:this.papp$, color$:this.papp_color$},
-      {id:"1",icon:"assets/solar-panel.png",unit:"kW", value$:this.solar$,color$:this.solar_color$},
+      { id: "0", icon: "assets/grid.png", unit$: of("kW"), value$: this.papp$, color$: this.papp_color$ },
+      { id: "1", icon: "assets/solar-panel.png", unit$: of("kW"), value$: this.solar$, color$: this.solar_color$ },
 
-      {id:"2",icon:"assets/cheap.png",unit:"kWh", value$:this.hc$, color$:of("white")},
-      {id:"3",icon:"assets/expensive.png",unit:"kWh", value$:this.hp$, color$:of("white")},
+      { id: "2", icon: "assets/cheap.png", unit$: of("kWh"), value$: this.hc$, color$: of("white") },
+      { id: "3", icon: "assets/expensive.png", unit$: of("kWh"), value$: this.hp$, color$: of("white") },
 
-      {id:"4",icon:"assets/clock.png",unit:"", value$:this.clock$, color$:of("white")},
-      {id:"5",icon:"assets/production.png",unit:"kWh", value$:this.solar_total$, color$:of("white")},
-     ]
-   
-      
+      { id: "4", icon: "assets/clock.png", unit$: of(""), value$: this.clock$, color$: of("white") },
+      { id: "5", icon: "assets/production.png", unit$: this.total_solar_unit$, value$: this.solar_total$, color$: of("white") },
+    ]
+
   }
 
   getColor(value: number): string {
     //value from 0 to 1
     var hue = ((1 - value) * 120).toString(10);
     return ["hsl(", hue, ",100%,50%)"].join("");
+  }
+
+  show_state() {
+    const date = new Date()
+    const secs = date.getSeconds() % 10
+    console.log(secs)
+    return secs < 7
   }
 
 

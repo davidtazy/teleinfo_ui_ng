@@ -71,6 +71,15 @@ class Teleinfo {
         return this.getAccuConsumption("BBRHC");
     }
 
+    getSoftSolarState() {
+        const state = this.find("soft_solar_router_state");
+        if (state){
+            return state.value
+        }
+        return "---"
+        
+    }
+
     isRedPeriod() {
         const ptec = this.find("PTEC");
         if (ptec && ptec.value.endsWith("JR")) {

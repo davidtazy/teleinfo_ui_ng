@@ -12,7 +12,8 @@ export interface InfluxQueryState {
 
 export interface S {
   date: Date,
-  value: number
+  import_power: number
+  solar_power: number
   color: string
 }
 
@@ -92,13 +93,17 @@ export class InfluxService {
 
             if (cur.name == "PTEC") {
               acc.color = cur.value
+            }else if(cur.name == "total_solar_production_wh"){
+              
+              acc.solar_power += (cur.value as unknown as number)
+              console.log("current solar",acc.solar_power)
             } else {
               acc.date = new Date(cur.date)
-              acc.value += Number.parseInt(cur.value)
+              acc.import_power += Number.parseInt(cur.value)
             }
 
             return acc
-          }, { date: new Date(), value: 0 } as S))
+          }, { date: new Date(), import_power: 0,solar_power:0 } as S))
         ),// ==> Obs<Samples> 
 
         tap(sample => this.price_to_color(sample)),
@@ -113,7 +118,7 @@ export class InfluxService {
         //process the consumption by period of subsequent samples
         concatAll<S[]>(), // ==> Obs<Samples> 
         pairwise<S>(), // a,b,c ==> (a,b),(b,c)
-        map(([a, b]) => ({ date: a.date, value: b.value - a.value, color: b.color })),
+        map(([a, b]) => ({ date: a.date, import_power: b.import_power - a.import_power,solar_power:b.solar_power - a.solar_power, color: b.color })),
         //regroup in one array
         reduce<S, S[]>((acc: S[], cur: S) => [...acc, cur], [] as S[])//==> Obs<Samples[]> 
 
@@ -156,7 +161,7 @@ import "date"
 option location = timezone.location(name: "Europe/Paris")
 from(bucket: "teleinfo")
   |> range(start: date.sub( d:150m, from:today() ) )
-  |> filter(fn: (r) => r._measurement =~  /BBR[A-Z]*/ or r._measurement == "PTEC" )
+  |> filter(fn: (r) => r._measurement =~  /BBR[A-Z]*/ or r._measurement == "PTEC" or r._measurement == "total_solar_production_wh" )
   |> keep(columns: ["_time", "_measurement","_value"])
   |> aggregateWindow(every: 30m, fn: last)`;
   }
@@ -176,7 +181,7 @@ end= date.sub( d:${end}, from:today() )
  
 from(bucket: "teleinfo")
     |> range(start: begin, stop:end )
-    |> filter(fn: (r) => r._measurement =~  /BBR[A-Z]*/ or r._measurement == "PTEC")
+    |> filter(fn: (r) => r._measurement =~  /BBR[A-Z]*/ or r._measurement == "PTEC" or r._measurement == "total_solar_production_wh")
     |> keep(columns: ["_time", "_measurement","_value"])
     |> aggregateWindow(every: 30m, fn: last)`
   }

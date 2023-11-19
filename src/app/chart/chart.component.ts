@@ -17,6 +17,7 @@ export class ChartComponent implements OnChanges {
   barChartData: ChartConfiguration<'bar'>['data'] = {
     labels: [],
     datasets: [
+      { data: [], backgroundColor: [] },
       { data: [], backgroundColor: [] }
     ],
 
@@ -25,9 +26,13 @@ export class ChartComponent implements OnChanges {
     responsive: true,
     plugins: { legend: { display: false } },
     scales:{
+      x:{
+        stacked:true
+      },
       y:{
         max:1100,
-        suggestedMin:0
+        suggestedMin:0,
+        stacked:true
       }
     }
   };
@@ -53,15 +58,21 @@ export class ChartComponent implements OnChanges {
 
     //fill dataset
     const colors: string[] = []
+    const solar_colors: string[] = []
+    console.log(samples)
     for (const sample of samples) {
-      this.barChartData.datasets[0].data.push(sample.value)
-
+      const solar_power = Math.max(0,sample.solar_power)
+      this.barChartData.datasets[0].data.push(solar_power)
+      this.barChartData.datasets[1].data.push(sample.import_power)
+      
       colors.push(sample.color)
+      solar_colors.push("#FFD700")
 
       const label = `${("0" + sample.date.getHours()).slice(-2)}:${("0" + sample.date.getMinutes()).slice(-2)}`;
       this.barChartData.labels.push(label)
     }
-    this.barChartData.datasets[0].backgroundColor = colors
+    this.barChartData.datasets[0].backgroundColor = solar_colors
+    this.barChartData.datasets[1].backgroundColor = colors
 
     //ensure abscisse always the same size
     const missing_labels = 52 - this.barChartData.labels.length

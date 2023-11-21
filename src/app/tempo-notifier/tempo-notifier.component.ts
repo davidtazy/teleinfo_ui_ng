@@ -22,8 +22,8 @@ export class TempoNotifierComponent {
 
       samples => {
         const teleinfo = new Teleinfo(samples, [])
-        this.show = true
-
+        
+        this.show = !this.show
         this.tempoLabel ="Aujourd'hui "
         if (this.isRed(teleinfo)) {
           this.tempoColor = "red"
@@ -32,6 +32,7 @@ export class TempoNotifierComponent {
             this.tempoLabel = "Demain "
           }
           this.tempoLabel += "Rouge"
+          
           return
         }
         if (this.isWhite(teleinfo)) {

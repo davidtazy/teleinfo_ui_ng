@@ -162,12 +162,14 @@ describe('Teleinfo core', () => {
     const tt = new Teleinfo(samples, []);
 
     expect(tt.isRedPeriod()).toBeFalsy();
+    expect(tt.isTomorrowRedPeriod()).toBeFalsy();
   });
 
   it("not red period when no data", () => {
     const tt = new Teleinfo([], []);
 
     expect(tt.isRedPeriod()).toBeFalsy();
+    expect(tt.isTomorrowRedPeriod()).toBeFalsy();
   });
 
   it("red period on red period", () => {
@@ -188,7 +190,11 @@ describe('Teleinfo core', () => {
     );
 
     expect(tt.isRedPeriod()).toBeTruthy();
+    expect(tt.isTomorrowRedPeriod()).toBeFalsy();
+
     expect(tt.isWhitePeriod()).toBeFalsy();
+    expect(tt.isTomorrowWhitePeriod()).toBeTruthy();
+
   });
 
   it("red period on demain", () => {
@@ -203,8 +209,8 @@ describe('Teleinfo core', () => {
       []
     );
 
-    expect(tt.isRedPeriod()).toBeTruthy();
-    expect(tt.isWhitePeriod()).toBeFalsy();
+    expect(tt.isTomorrowRedPeriod()).toBeTruthy();
+    expect(tt.isRedPeriod()).toBeFalsy();
   });
 
   it("white period on demain", () => {
@@ -219,8 +225,8 @@ describe('Teleinfo core', () => {
       []
     );
 
-    expect(tt.isRedPeriod()).toBeFalsy();
-    expect(tt.isWhitePeriod()).toBeTruthy();
+    expect(tt.isTomorrowWhitePeriod()).toBeTruthy();
+    expect(tt.isWhitePeriod()).toBeFalsy();
   });
 
 })

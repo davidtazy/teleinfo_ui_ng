@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { InfluxService } from '../influx.service';
 import { Teleinfo } from '../teleinfo';
@@ -13,6 +13,9 @@ export class TempoNotifierComponent {
   tempoLabel: string = "Bleue"
   show: boolean = false
 
+  @Input()
+  tomorrow = false
+
   constructor(private influx: InfluxService) {
 
     influx.stream$.subscribe(
@@ -20,14 +23,23 @@ export class TempoNotifierComponent {
       samples => {
         const teleinfo = new Teleinfo(samples, [])
         this.show = true
-        if (teleinfo.isRedPeriod()) {
+
+        this.tempoLabel ="Aujourd'hui "
+        if (this.isRed(teleinfo)) {
           this.tempoColor = "red"
-          this.tempoLabel = "Rouge"
+          
+          if (this.tomorrow){
+            this.tempoLabel = "Demain "
+          }
+          this.tempoLabel += "Rouge"
           return
         }
-        if (teleinfo.isWhitePeriod()) {
+        if (this.isWhite(teleinfo)) {
           this.tempoColor = "orange"
-          this.tempoLabel = "Blanc"
+          if (this.tomorrow){
+            this.tempoLabel = "Demain "
+          }
+          this.tempoLabel += "Blanc"
           return
         }
         this.show = false
@@ -35,6 +47,14 @@ export class TempoNotifierComponent {
         this.tempoLabel = "Bleu"
       }
     )
+  }
+
+  isRed(teleinfo:Teleinfo){
+    return (!this.tomorrow && teleinfo.isRedPeriod()) || (this.tomorrow && teleinfo.isTomorrowRedPeriod())
+  }
+
+  isWhite(teleinfo:Teleinfo){
+    return (!this.tomorrow && teleinfo.isWhitePeriod()) || (this.tomorrow && teleinfo.isTomorrowWhitePeriod())
   }
 
 }

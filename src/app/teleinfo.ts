@@ -82,10 +82,15 @@ class Teleinfo {
 
     isRedPeriod() {
         const ptec = this.find("PTEC");
-        if (ptec && ptec.value.endsWith("JR")) {
-            return true;
-        }
+        return ptec && ptec.value.endsWith("JR");
+    }
 
+    isWhitePeriod() {
+        const ptec = this.find("PTEC");
+        return ptec && ptec.value.endsWith("JW");
+    }
+
+    isTomorrowRedPeriod() {
         const demain = this.find("DEMAIN");
         if (demain === undefined) {
             return false;
@@ -93,11 +98,7 @@ class Teleinfo {
         return demain.value.startsWith("ROUG");
     }
 
-    isWhitePeriod() {
-        if (this.isRedPeriod()) {
-            return false;
-        }
-
+    isTomorrowWhitePeriod() {
         const demain = this.find("DEMAIN");
         if (demain === undefined) {
             return false;

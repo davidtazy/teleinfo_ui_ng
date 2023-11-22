@@ -23,7 +23,12 @@ export class TempoNotifierComponent {
       samples => {
         const teleinfo = new Teleinfo(samples, [])
         
-        this.show = !this.show
+        if(this.tomorrow){
+          //tomorrow notif is blinking
+          this.show = !this.show
+        }else{
+          this.show = true
+        }
         this.tempoLabel ="Aujourd'hui "
         if (this.isRed(teleinfo)) {
           this.tempoColor = "red"

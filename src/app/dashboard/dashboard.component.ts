@@ -100,7 +100,7 @@ export class DashboardComponent {
 
   show_state(state:string) {
     if (state == "Idle"){
-      return true
+      return false
     }
     const date = new Date()
     const secs = date.getSeconds() % 10

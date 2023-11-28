@@ -60,12 +60,17 @@ export class DashboardComponent {
       this.hc$.next(teleinfo.getNightlyConsumption().renderTokWh())
       this.hp$.next(teleinfo.getDailyConsumption().renderTokWh())
 
-      if (this.show_state()) {
-        this.total_solar_unit$.next("")
-        this.solar_total$.next(teleinfo.getSoftSolarState())
+      let state = teleinfo.getSoftSolarState()
+      const daily_solar_prod = teleinfo.getDailySolarProduction().renderTokWh()
+      if (this.show_state(state)) {
+        this.total_solar_unit$.next(daily_solar_prod)  
+        if (state){
+          state =  state.split(" ").slice(-1)[0]
+        }
+        this.solar_total$.next(state)
       } else {
         this.total_solar_unit$.next("kWh")
-        this.solar_total$.next(teleinfo.getDailySolarProduction().renderTokWh())
+        this.solar_total$.next(daily_solar_prod)
       }
 
       const date = new Date()
@@ -93,7 +98,10 @@ export class DashboardComponent {
     return ["hsl(", hue, ",100%,50%)"].join("");
   }
 
-  show_state() {
+  show_state(state:string) {
+    if (state == "Idle"){
+      return true
+    }
     const date = new Date()
     const secs = date.getSeconds() % 10
     return secs < 7

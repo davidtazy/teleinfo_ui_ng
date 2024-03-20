@@ -5,11 +5,11 @@ rm -rf dist
 npm run build
 mv dist/teleinfo-ui-ng dist/build
 tar -zcvf build.tgz  --directory dist/ .
-scp  build.tgz pi@192.168.1.38:/home/pi/teleinfo
+scp  build.tgz pi@192.168.1.15:/home/pi/teleinfo
 
 echo "########## load on server ###########"
 
-ssh pi@192.168.1.38 "\
+ssh pi@192.168.1.15 "\
  sudo systemctl stop teleinfo_ui.service      &&\
  cd /home/pi/teleinfo  && tar -zxvf build.tgz &&\
  sudo systemctl start teleinfo_ui.service      "

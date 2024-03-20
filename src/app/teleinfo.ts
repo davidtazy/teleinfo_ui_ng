@@ -37,6 +37,7 @@ class Energy {
 }
 
 class Teleinfo {
+   
     samples: Sample[];
     zero: Sample[];
 
@@ -59,9 +60,17 @@ class Teleinfo {
         return Power.Watt(getIntValue("instant_solar_production_watt", this.samples));
     }
 
+    getInstantBatteryPower() {
+        return Power.Watt(getIntValue("instant_battery_power_watt", this.samples));
+      }
+
     getDailySolarProduction(): Energy {
         return Energy.WattHour(getIntValue("total_solar_production_wh", this.samples));
     }
+
+    getBatteryPercent(): number {
+        return getIntValue("instant_battery_soc", this.samples)
+      }
 
     getDailyConsumption() {
         return this.getAccuConsumption("BBRHP");

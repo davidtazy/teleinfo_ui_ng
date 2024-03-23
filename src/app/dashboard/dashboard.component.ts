@@ -45,6 +45,21 @@ export class DashboardComponent {
       share()
     )
 
+    const morning_teleinfo$ = combineLatest([influx.stream$, influx.morning$]).pipe(
+      map(([stream, morning]) => new Teleinfo(stream, morning)),
+      share()
+    )
+
+    morning_teleinfo$.subscribe((teleinfo: Teleinfo) => {
+      
+      const battery_percent_delta =teleinfo.getMorningBatteryPercent() - teleinfo.getBatteryPercent()
+      const battery_delta_watthour = battery_percent_delta*96
+      const daily_solar_prod_watthour = teleinfo.getDailySolarProduction().watt_hour
+      const grid_watthour = teleinfo.getDailyConsumption().watt_hour + teleinfo.getNightlyConsumption().watt_hour
+      const daily_consumption_kwh =  (battery_delta_watthour + daily_solar_prod_watthour + grid_watthour)/1000
+      this.hc$.next(daily_consumption_kwh.toFixed(1))
+    })
+
     this.teleinfo$.subscribe((teleinfo: Teleinfo) => {
       const grid_power = teleinfo.getInstantPower().watts;
       const instant_solar = teleinfo.getInstantSolarPower().watts
@@ -61,12 +76,13 @@ export class DashboardComponent {
       const color = this.solar_colors.colorAt(percent)
       this.solar_color$.next("#" + color)
 
-      this.hc$.next(teleinfo.getNightlyConsumption().renderTokWh())
-      this.hp$.next(teleinfo.getDailyConsumption().renderTokWh())
+      //this.hc$.next(teleinfo.getNightlyConsumption().renderTokWh())
+      //this.hp$.next(teleinfo.getDailyConsumption().renderTokWh())
 
-      this.battery_percent$.next(teleinfo.getBatteryPercent().toFixed(0))
-      const battery_color = this.battery_colors.colorAt(teleinfo.getBatteryPercent())
-      this.battery_color$.next("#" + color)
+      const battery_percent = teleinfo.getBatteryPercent()
+      this.battery_percent$.next(battery_percent.toFixed(0))
+      const battery_color = this.battery_colors.colorAt(battery_percent)
+      this.battery_color$.next("#" + battery_color)
 
       let state = teleinfo.getSoftSolarState()
       const daily_solar_prod = teleinfo.getDailySolarProduction().renderTokWh()

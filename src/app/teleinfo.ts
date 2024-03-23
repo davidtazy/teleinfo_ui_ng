@@ -37,6 +37,7 @@ class Energy {
 }
 
 class Teleinfo {
+    
    
     samples: Sample[];
     zero: Sample[];
@@ -70,6 +71,9 @@ class Teleinfo {
 
     getBatteryPercent(): number {
         return getIntValue("instant_battery_soc", this.samples)
+      }
+    getMorningBatteryPercent() {
+        return getIntValue("instant_battery_soc", this.zero)
       }
 
     getDailyConsumption() {

@@ -28,6 +28,7 @@ export class InfluxService {
 
   private stream_cache: Observable<Sample[]> | null = null
   private offset_cache: Observable<Sample[]> | null = null
+  private morning_cache: Observable<Sample[]> | null = null
 
   constructor(private influx_client: InfluxClientService) { }
 
@@ -52,6 +53,26 @@ export class InfluxService {
       share()
     )
     return this.stream_cache
+  }
+
+
+  public get morning$(): Observable<Sample[]> {
+    if (this.morning_cache !== null) {
+      return this.morning_cache
+    }
+    this.morning_cache = timer(1000, 60000).pipe(
+      switchMap((_) => {
+        return from(this.influx_client.query_rows(this.getMorningQuery(new Date())))
+          .pipe(
+            bufferTime(1000),
+            map(samples => samples.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0)))
+          )
+      }),
+      share()
+    )
+
+    return this.morning_cache
+
   }
 
   public get offset$(): Observable<Sample[]> {
@@ -93,8 +114,8 @@ export class InfluxService {
 
             if (cur.name == "PTEC") {
               acc.color = cur.value
-            }else if(cur.name == "total_solar_production_wh"){
-              
+            } else if (cur.name == "total_solar_production_wh") {
+
               acc.solar_power += (cur.value as unknown as number)
             } else {
               acc.date = new Date(cur.date)
@@ -102,7 +123,7 @@ export class InfluxService {
             }
 
             return acc
-          }, { date: new Date(), import_power: 0,solar_power:0 } as S))
+          }, { date: new Date(), import_power: 0, solar_power: 0 } as S))
         ),// ==> Obs<Samples> 
 
         tap(sample => this.price_to_color(sample)),
@@ -117,7 +138,7 @@ export class InfluxService {
         //process the consumption by period of subsequent samples
         concatAll<S[]>(), // ==> Obs<Samples> 
         pairwise<S>(), // a,b,c ==> (a,b),(b,c)
-        map(([a, b]) => ({ date: a.date, import_power: b.import_power - a.import_power,solar_power:b.solar_power - a.solar_power, color: b.color })),
+        map(([a, b]) => ({ date: a.date, import_power: b.import_power - a.import_power, solar_power: b.solar_power - a.solar_power, color: b.color })),
         //regroup in one array
         reduce<S, S[]>((acc: S[], cur: S) => [...acc, cur], [] as S[])//==> Obs<Samples[]> 
 
@@ -193,6 +214,39 @@ from(bucket: "${this.bucket}")
 |> filter(fn: (r) => r["_field"] == "value")
 |> last()`;
   }
+
+  getMorningQuery(now: Date) {
+    let day_query = `import "timezone"
+import "date"
+option location = timezone.location(name: "Europe/Paris")
+from(bucket: "${this.bucket}")
+|> range(start: date.add( d:7h, to:today() ) )
+|> filter(fn: (r) => r["_field"] == "value")
+|> first()`;
+
+    let night_query = `import "timezone"
+import "date"
+option location = timezone.location(name: "Europe/Paris")
+from(bucket: "${this.bucket}")
+|> range(start: date.sub( d:17h, from:today() ) )
+|> filter(fn: (r) => r["_field"] == "value")
+|> first()`;
+
+    if (now.getHours() >= 7) {
+      // in the evening (from  10pm to midnight)
+      // nightly counter is reset for the new night
+      // dayly counter is kept untill midnight
+      return day_query;
+    } else {
+      // from midnight to 10pm
+      // nightly counter count from 10pm the previous day
+      // daily counter too
+      return night_query;
+    }
+
+  }
+
+
 
 
   getOriginQuery(now: Date): string {

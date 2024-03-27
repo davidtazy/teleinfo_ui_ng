@@ -5,13 +5,10 @@
     <app-dashboard></app-dashboard>
   
 
-  <input type="checkbox" name="auto-scroll" id="auto-scroll" [checked]="autoscroll" (change)="autoscroll = !autoscroll">
-  <label for="auto-scroll">auto-scroll</label>
-
-
   <div class="buttons">
     <button style="height: 80px;padding: 10px;" (click)="onPrevious()">precedent</button>
     <button style="height: 80px;padding: 10px;" (click)="onNext()">suivant</button>
+    <input  style="height: 80px;width: 80px;padding: 10px;" type="checkbox"  name="auto-scroll" id="auto-scroll" [checked]="autoscroll" (change)="autoscroll = !autoscroll">
   </div>
   <h1 id="6" style="text-align: center;">{{date_label}}</h1>
   <app-chart [datas]="daily"></app-chart>

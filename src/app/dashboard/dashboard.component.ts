@@ -45,19 +45,9 @@ export class DashboardComponent {
       share()
     )
 
-    const morning_teleinfo$ = combineLatest([influx.stream$, influx.morning$]).pipe(
-      map(([stream, morning]) => new Teleinfo(stream, morning)),
-      share()
-    )
 
-    morning_teleinfo$.subscribe((teleinfo: Teleinfo) => {
-      
-      const battery_percent_delta =teleinfo.getMorningBatteryPercent() - teleinfo.getBatteryPercent()
-      const battery_delta_watthour = battery_percent_delta*96
-      const daily_solar_prod_watthour = teleinfo.getDailySolarProduction().watt_hour
-      const grid_watthour = teleinfo.getDailyConsumption().watt_hour + teleinfo.getNightlyConsumption().watt_hour
-      const daily_consumption_kwh =  (battery_delta_watthour + daily_solar_prod_watthour + grid_watthour)/1000
-      this.hc$.next(daily_consumption_kwh.toFixed(1))
+    influx.daily_home_consumption$.subscribe((dailyConsumtion_watthour: number) => {
+      this.hc$.next((dailyConsumtion_watthour/1000).toFixed(1))
     })
 
     this.teleinfo$.subscribe((teleinfo: Teleinfo) => {
@@ -107,7 +97,7 @@ export class DashboardComponent {
       { id: "0", icon: "assets/home.png", unit$: of("kW"), value$: this.papp$, color$: this.papp_color$ },
       { id: "1", icon: "assets/solar-panel.png", unit$: of("kW"), value$: this.solar$, color$: this.solar_color$ },
 
-      { id: "2", icon: "assets/cheap.png", unit$: of("kWh"), value$: this.hc$, color$: of("white") },
+      { id: "2", icon: "assets/expensive.png", unit$: of("kWh"), value$: this.hc$, color$: of("white") },
       { id: "3", icon: "assets/battery.png", unit$: of("%"), value$: this.battery_percent$, color$: this.battery_color$ },
       //{ id: "3", icon: "assets/expensive.png", unit$: of("kWh"), value$: this.hp$, color$: of("white") },
 

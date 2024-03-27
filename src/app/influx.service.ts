@@ -28,7 +28,7 @@ export class InfluxService {
 
   private stream_cache: Observable<Sample[]> | null = null
   private offset_cache: Observable<Sample[]> | null = null
-  private morning_cache: Observable<Sample[]> | null = null
+  private daily_consumption_cache: Observable<number> | null = null
 
   constructor(private influx_client: InfluxClientService) { }
 
@@ -56,22 +56,18 @@ export class InfluxService {
   }
 
 
-  public get morning$(): Observable<Sample[]> {
-    if (this.morning_cache !== null) {
-      return this.morning_cache
+  public get daily_home_consumption$(): Observable<number> {
+    if (this.daily_consumption_cache !== null) {
+      return this.daily_consumption_cache
     }
-    this.morning_cache = timer(1000, 60000).pipe(
+    this.daily_consumption_cache = timer(1000, 60000).pipe(
       switchMap((_) => {
-        return from(this.influx_client.query_rows(this.getMorningQuery(new Date())))
-          .pipe(
-            bufferTime(1000),
-            map(samples => samples.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0)))
-          )
+        return from(this.influx_client.query_number(this.getDailyConsumptionQuery(new Date())))
       }),
       share()
     )
 
-    return this.morning_cache
+    return this.daily_consumption_cache
 
   }
 
@@ -215,34 +211,23 @@ from(bucket: "${this.bucket}")
 |> last()`;
   }
 
-  getMorningQuery(now: Date) {
-    let day_query = `import "timezone"
+  getDailyConsumptionQuery(now: Date) {
+    const query = `import "timezone"
 import "date"
 option location = timezone.location(name: "Europe/Paris")
 from(bucket: "${this.bucket}")
-|> range(start: date.add( d:7h, to:today() ) )
-|> filter(fn: (r) => r["_field"] == "value")
-|> first()`;
+  |> range(start: today()  )
+  |> filter(fn: (r) => r._measurement == "instant_battery_power_watt" or r._measurement == "instant_solar_production_watt" or r._measurement == "power_import_watt")
+  |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+  |> group()
+  |> pivot(rowKey: ["_time"], columnKey: ["_measurement"], valueColumn: "value")
+  |> map(fn: (r) => ({ r with _value: r.instant_solar_production_watt - r.instant_battery_power_watt + r.power_import_watt }))
+  |> keep(columns: ["_value", "_time"])
+  |> aggregateWindow(every: 5m, fn: median, createEmpty: false)
+  |> integral(unit: 1h)`;
 
-    let night_query = `import "timezone"
-import "date"
-option location = timezone.location(name: "Europe/Paris")
-from(bucket: "${this.bucket}")
-|> range(start: date.sub( d:17h, from:today() ) )
-|> filter(fn: (r) => r["_field"] == "value")
-|> first()`;
-
-    if (now.getHours() >= 7) {
-      // in the evening (from  10pm to midnight)
-      // nightly counter is reset for the new night
-      // dayly counter is kept untill midnight
-      return day_query;
-    } else {
-      // from midnight to 10pm
-      // nightly counter count from 10pm the previous day
-      // daily counter too
-      return night_query;
-    }
+    return query;
+   
 
   }
 

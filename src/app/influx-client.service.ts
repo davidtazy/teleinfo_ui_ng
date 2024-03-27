@@ -35,4 +35,21 @@ export class InfluxClientService {
       )
   }
 
+
+  public query_number(fluxQuery: string): Observable<number>{
+
+    return from(this.queryApi.rows(fluxQuery))
+      .pipe(
+        catchError(error => {
+          console.error(error)
+          return EMPTY
+        }),
+        map((row) => {
+          const o = row.tableMeta.toObject(row.values)
+          return  o["_value"];
+        }
+        )
+      )
+  }
+
 }
